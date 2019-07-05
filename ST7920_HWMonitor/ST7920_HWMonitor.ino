@@ -19,6 +19,12 @@
   https://cdn.hackaday.io/files/19018813666112/HardwareSerialMonitor_v1.1.zip
 */
 
+// comment out for regular mode
+//#define GRAPH_BAR
+
+// comment out for load graph
+#define CLOCK_GRAPH
+
 #define LCD_BACKLIGHT  9
 #define LCD_CS         10
 
@@ -45,7 +51,6 @@ void setup()
   pinMode(LCD_BACKLIGHT, OUTPUT);
   //analogWrite(LCD_BACKLIGHT,30);
   digitalWrite(LCD_BACKLIGHT, HIGH);
-  Serial.begin(9600); // 32u4 USB Serial Baud Rate
   inputString.reserve(200);
   
   SPI.begin();
@@ -114,10 +119,13 @@ int x=0;
 void addVal()
 {
   for(i=0;i<NUM_VAL-1;i++) valTab[i]=valTab[i+1];
-  //valTab[NUM_VAL-1] = cpuLoad*ght/100;
+#ifdef CLOCK_GRAPH
   if(cpuClock<400) cpuClock=400;
   if(cpuClock>2900) cpuClock=2900;
   valTab[NUM_VAL-1] = (long)(cpuClock-MIN_CLOCK)*ght/(MAX_CLOCK-MIN_CLOCK);
+#else
+  valTab[NUM_VAL-1] = cpuLoad*ght/100;
+#endif
 }
 
 void drawGraph()
@@ -133,10 +141,10 @@ void drawGraph()
 void drawGraphBar()
 {
   lcd.drawRectD(0,36,128,ght,1);
-  for(i=0;i<NUM_VAL;i++) {
-    lcd.fillRectD(i*4,63-valTab[i],4,valTab[i],1);
-    lcd.drawLineH(i*4,(i+1)*4-1,63-valTab[i],1);
-    if(i>0) lcd.drawLineV(i*4,63-valTab[i-1],63-valTab[i],1);
+  for(i=1;i<NUM_VAL;i++) {
+    lcd.fillRectD((i-1)*4,63-valTab[i],4,valTab[i],1);
+    lcd.drawLineH((i-1)*4,(i+0)*4-1,63-valTab[i],1);
+    if(i>1) lcd.drawLineV((i-1)*4,63-valTab[i-1],63-valTab[i],1);
   }
 }
 
@@ -159,15 +167,21 @@ void loop()
     lcd.printStr(0, 9*3, "Used RAM: ");
     x=lcd.printStr(xs, 9*3, (char*)ramString.c_str());
     lcd.printStr(x, 9*3, " GB");
-
-    lcd.drawLineVfast(127-0,9*2+1,9*2+1+4,1);
-    lcd.drawLineVfast(127-1,9*2+2,9*2+2+2,1);
-    lcd.drawLineVfast(127-2,9*2+3,9*2+3+0,1);
+#ifdef CLOCK_GRAPH
+    i = 2;
+#else
+    i = 1;
+#endif
+    lcd.drawLineVfast(127-0,9*i+1,9*i+1+4,1);
+    lcd.drawLineVfast(127-1,9*i+2,9*i+2+2,1);
+    lcd.drawLineVfast(127-2,9*i+3,9*i+3+0,1);
   
     if(inp==3) addVal();
+#ifdef GRAPH_BAR
+    drawGraphBar();
+#else
     drawGraph();
-    //drawGraphBar();
-  
+#endif
     lcd.display(0);
   }
   if(inp>=3) { delay(1000); inp=0; }
