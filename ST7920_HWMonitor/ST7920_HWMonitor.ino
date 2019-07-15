@@ -1,4 +1,4 @@
-// Arduino HWMonitor - numeric info and 1 graph
+// Arduino HWMonitor - numeric info and 1 graph (CPU load or clock)
 // (C)2019 Pawel A. Hernik
 
 /*
@@ -6,11 +6,11 @@
 
  #01 GND  -> GND
  #02 VCC  -> VCC (5V)
- #04 RS   -> SCK/D13
- #05 R/W  -> MOSI/D11
- #06 E    -> CS/D10 or any pin
+ #04 RS   -> D10/CS or any pin
+ #05 R/W  -> D11/MOSI
+ #06 E    -> D13/SCK
  #15 PSB  -> GND (for SPI mode)
- #19 BLA  -> VCC or any pin via 300ohm
+ #19 BLA  -> D9, VCC or any pin via 300ohm resistor
  #20 BLK  -> GND
 */
 
